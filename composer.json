@@ -1,0 +1,33 @@
+{
+  "name": "ju/msg",
+  "description": "聚名消息管理，支持微信模板消息、短信模板、站内信，仅支持ju框架 -- By 聚名科技",
+  "type": "library",
+  "keywords": [
+    "聚名消息管理",
+    "微信模板消息",
+    "短信模板",
+    "站内信",
+    "聚名科技"
+  ],
+  "require": {
+    "php": ">=5.6.0"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "damon",
+      "email": "644577519@qq.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "JuMsg\\": "src/Msg"
+    },
+    "classmap": [
+    ],
+    "files": [
+      "src/function/helper.php"
+    ]
+  }
+}
