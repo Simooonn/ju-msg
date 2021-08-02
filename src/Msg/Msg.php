@@ -112,9 +112,9 @@ class Msg
     /**
      *  发送消息(同步)
      *
-     * @param       $lx     业务类型
+     * @param       $ywlx     业务类型
      * @param       $uid    用户id
-     * @param       $fs     ['znx','sms']
+     * @param       $fs     ['znx','sms','wx'] 可多选，比如站内信和短信一起发，传['znx','sms']
      * @param array $d      消息内容用到的参数
      *
      * @return array|mixed
