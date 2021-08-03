@@ -592,3 +592,17 @@ if (!function_exists('musta')) {
         return is_array($arr) && count($arr) > 0;
     }
 }
+
+if (!function_exists('ids')) {
+    /**
+     * 验证正整数和逗号
+     *
+     * @param $str
+     *
+     * @return bool
+     * @author wumengmeng <wu_mengmeng@foxmail.com>
+     */
+    function ids($str) {
+        return preg_match('/^(([1-9][0-9]*)(,([1-9][0-9]*))*)$/', $str) ? true : false;
+    }
+}

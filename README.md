@@ -1,4 +1,4 @@
-##### 1.composer引入文件
+##### 1.composer引入文件 
 进入项目目录下执行命令
 >composer require ju/msg
 
@@ -82,38 +82,61 @@ require ROOT.'vendor/autoload.php';
 ##### 4.发送消息
 4.1.直接发送
 
-> 调用方法 (new \JuMsg\Msg())->send('登录注册',0,['sms'],$data);
+> 直接发送 
 
 ```
-    //短信
-        $data = [
-          'sjhm'=>'17721086033',
-          'code'=>888888,
-          //'qm'=>'其他签名',//可传可不传，传入后，可支持多签名
-        ];
-        (new \JuMsg\Msg())->send('登录注册',0,['sms'],$data);
+//短信
+$data = [
+  'sjhm'=>'17721086033',
+  'code'=>888888,
+  //'qm'=>'其他签名',//可传可不传，传入后，可支持多签名
+];
+(new \JuMsg\Msg())->send('登录注册',0,['sms'],$data);
 
-        //站内信
-        $data = [
-          'uid'=>'17721086033',
-        ];
-        (new \JuMsg\Msg())->send('登录注册',10001,['znx'],$data);
+//站内信
+$data = [
+  'uid'=>'17721086033',
+];
+(new \JuMsg\Msg())->send('登录注册',10001,['znx'],$data);
 
 
-        //微信消息模板
-        $data = [
-          'uid'=>'17721086033',
-          'openid'=>'o95aL6cCD52j9CYOTdiLCAZFpO0k',
-          'order_sn'=>'NO9527',
-          'name'=>'纪苏',
-          'sjhm'=>'17721086032',
-          'ddjg'=>998,
-          'zfzt'=>'支付成功',
-          
-        /*  'appId'     => '###请替换成自己的微信公众号appId###',//登录微信公众平台=>基本配置=>appId
-          'appSecret' => '###请替换成自己的微信公众号appSecret###',//登录微信公众平台=>基本配置=>appSecret
-          */
-          //appId和appSecret可传可不传，不传使用msg.php里的默认配置，传入后优先使用传入的数据，用以支持多公众号
-        ];
-       (new \JuMsg\Msg())->send('登录注册',10001,['wx'],$data);
+//微信消息模板
+$data = [
+  'uid'=>'17721086033',
+  'openid'=>'o95aL6cCD52j9CYOTdiLCAZFpO0k',
+  'order_sn'=>'NO9527',
+  'name'=>'纪苏',
+  'sjhm'=>'17721086032',
+  'ddjg'=>998,
+  'zfzt'=>'支付成功',
+  
+/*  'appId'     => '###请替换成自己的微信公众号appId###',//登录微信公众平台=>基本配置=>appId
+  'appSecret' => '###请替换成自己的微信公众号appSecret###',//登录微信公众平台=>基本配置=>appSecret
+  */
+  //appId和appSecret可传可不传，不传使用msg.php里的默认配置，传入后优先使用传入的数据，用以支持多公众号
+];
+(new \JuMsg\Msg())->send('登录注册',10001,['wx'],$data);
+```
+
+4.2.异步发送（先异步发送记录数据，再去队列消费数据真实发送）
+
+> 异步发送 （记录数据，等待后台队列消费）
+
+```
+$data = [
+  'sjhm'=>'17721086033',
+  'code'=>888888,
+  'uid'=>'17721086033',
+  'openid'=>'o95aL6cCD52j9CYOTdiLCAZFpO0k',
+  'order_sn'=>'NO9527',
+  'name'=>'纪苏',
+  'ddjg'=>998,
+  'zfzt'=>'支付成功',
+];
+(new \JuMsg\Msg())->async_send('登录注册',10018,['sms','znx','wx'],$data);
+```
+
+> 后台消费（消费队列真实发送） 
+```
+(new \JuMsg\Msg())->customer_queue();
 ```

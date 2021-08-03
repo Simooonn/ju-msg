@@ -68,33 +68,36 @@ return [
     ],*/
 
     '登录注册' => [
-      'znx' => [
-        'lx'  => 0,
-        'tan' => 0,
-        'bt'  => '用户{$uid}',
-        'nr'  => '用户{$uid}已登录',
-      ],//lx=站内信类型,tan=是否弹窗提醒
+      'znx' => ['lx' => 0, 'bt' => '用户{$uid}', 'nr' => '用户{$uid}已登录', 'tan' => 0],//bt=标题,nr=内容,lx=站内信类型,tan=是否弹窗提醒
       'sms' => ['mbid' => 'SMS_20191112114503', 'xz' => 0, 'params' => ['code']],
       'wx'  => [
-        'params'      => ['name', 'time', 'sm'],
+        'params'      => ['order_sn', 'name', 'sjhm', 'ddjg', 'zfzt'],
         'touser'      => '',
-        'template_id' => 'QJWjt24bdRMm-Y6k6QBkTLNtC0BYnAsjjDwwc2LUEPo',
+        'template_id' => 'H_kgCP8FGqoDPd8iK0178ei_srUwzbcu2zJG8XKD9Oo',
         'url'         => '',
         'data'        => [
           'first'    => [
-            'value' => '有新的客户成功提交需求，请及时处理！',
+            'value' => '你好，你已下单成功！',
             'color' => '#173177',
           ],
-          'keyword1' => [ // 申请人
+          'keyword1' => [ // 订单号
+                          'value' => '{$order_sn}',
+                          'color' => '#173177',
+          ],
+          'keyword2' => [ // 姓名
                           'value' => '{$name}',
                           'color' => '#173177',
           ],
-          'keyword2' => [ // 申请时间
-                          'value' => '{$time}',
+          'keyword3' => [ // 手机
+                          'value' => '{$sjhm}',
                           'color' => '#173177',
           ],
-          'keyword3' => [ // 申请业务
-                          'value' => '{$sm}',
+          'keyword4' => [ // 订单总价
+                          'value' => '{$ddjg}',
+                          'color' => '#173177',
+          ],
+          'keyword5' => [ // 支付状态
+                          'value' => '{$zfzt}',
                           'color' => '#173177',
           ],
           'remark'   => [

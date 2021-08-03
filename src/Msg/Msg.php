@@ -28,79 +28,79 @@ class Msg
         $lock = lock($hcm, 3600);
         if (!$lock) {
             _log('log/msg', sprintf('%s 存在互斥锁，终止脚本', $hcm));
-            return;
+            return r_fail('系统繁忙!');
         }
 
         // step2 查询要执行任务列表
-        $tasks = M()->select('x_msg_queue', 'id,lx,fs,uid,data', ['zt' => 1], 'id ASC', 100);
+        $tasks = M()->select('x_msg_queue', 'id,ywlx,fs,uid,data', ['zt' => 1], 'id ASC', 100);
+        if (empty($tasks)) {
+            unlock($hcm, $lock);
+            return r_fail('没有任务!');
+        }
 
         // step3 更新状态为处理中
         $ids = array_column($tasks, 'id');
         if ($ids) {
-            M()->update('x_msg_queue', ['zt' => 2], ['id' => $ids]);
+            $res = M()->update('x_msg_queue', ['zt' => 2], ['id' => $ids],1);
+            if(!$res){
+                unlock($hcm, $lock);
+                return r_fail('处理失败!');
+            }
         }
-
-        // step4 解锁
-        unlock($hcm, $lock);
 
         // step5 发送消息
-        if (!$tasks) {
-            return;
-        }
         foreach ($tasks as $task) {
-            $uid = $task['uid'];
-            $uid = array_x(explode(',', $uid));
+            $_uid = ints($task['uid']);
             $data = j2a($task['data']);
-            $re = $this->send($task['lx'], $data);
+            $re = $this->send($task['ywlx'], $_uid, j2a($task['fs']), $data);
             if ($re['code'] == 1) {
                 $log = "msg_queue_{$task['id']}，发送成功";
             } else {
                 $j_data = a2j($task);
                 $log = "msg_queue_{$task['id']}，发送失败，记录信息：{$j_data}，错误信息：{$re['msg']}";
+                _log('log/msg_fail',$log);
             }
             _log('log/msg',$log);
-//            foreach ($uid as $_uid) {
-//
-//            }
-            M()->update('x_msg_queue', ['zt' => 3], ['id' => $task['id']]);
+            $res = M()->update('x_msg_queue', ['zt' => 3], ['id' => $task['id']],1);
+            if(!$res){
+                return r_fail('发送失败!');
+            }
         }
-
+        unlock($hcm, $lock);
+        return r_fail('ok!');
     }
 
     /**
      * 发送消息(异步)
+     * 批量添加没有意义，不同用户对应的数据可能是不一样的，既然已经做成异步，单个添加效果是一样的
      *
-     * @param       $lx     业务类型
+     * @param       $ywlx       业务类型
+     * @param       $uid        用户id
+     * @param       $fs         发送方式(znx=站内信 sms=短信 wx=微信模板消息)  ['znx','sms','wx'] 可多选，比如站内信和短信一起发，传['znx','sms']
      * @param array $d
      *
      * @return array
      * @author wumengmeng <wu_mengmeng@foxmail.com>
      */
-    public function async_send($lx,  $d = []) {
+    public function async_send($ywlx, $uid, $fs, $d = []) {
         $d = glwb($d);
-        $uid = $d['uid'];// uid 支持批量格式 数组=>[1,2,3] 或 字符串=>1或1,2,3
+        $uid = ints($uid);
         $msg_tpl = RX('msg','tpl');
-        $rule = [
-          ['in', [$lx, array_keys($msg_tpl)], '业务类型不存在!'],
-        ];
-        $fs = implode(',',array_keys($msg_tpl[$lx]));//znx=站内信 sms=短信 wx=微信模板消息
-        if(empty($fs)){
-            return r_fail('发送方式不能为空');
+        if(!in_arr($ywlx, array_keys($msg_tpl))){
+            return r_fail('业务类型不存在!');
         }
-        if (instr($fs, 'znx') || instr($fs, 'wx')) {
-            if (is_array($uid)) {
-                $uid = implode(',', $uid);
+        if(!musta($fs)){
+            return r_fail('发送方式不能为空!');
+        }
+        if ( in_arr('znx',$fs) || in_arr('wx',$fs) ) {
+            if ($uid <= 0) {
+                return r_fail( '帐户ID错误!');
             }
-            $rule[] = ['ids', $uid, 'uid参数有误!'];
-        }
-        $check = check($rule);
-        if ($check !== true) {
-            return r_fail($check);
         }
 
         M()->insert('x_msg_queue', [
-          'lx' => $lx,
-          'fs' => $fs,
+          'ywlx' => $ywlx,
+          'fs' =>  a2j($fs),
           'uid' => $uid,
           'data' => a2j($d),
           'ip' => getip(),

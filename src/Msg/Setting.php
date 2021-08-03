@@ -44,7 +44,7 @@ CREATE TABLE `x_msg_sms`  (
   `czip` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '操作IP',
   `sj` datetime NULL DEFAULT NULL COMMENT '发送时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC";
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '消息-短信' ROW_FORMAT = DYNAMIC";
         $res = M()->query($sql);
         if($res === true){
             echo "create table x_msg_sms ok!".'<br>';
@@ -86,7 +86,7 @@ CREATE TABLE `x_msg_wx`  (
   `add_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `up_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '微信模板消息' ROW_FORMAT = DYNAMIC";
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '消息-微信模板消息' ROW_FORMAT = DYNAMIC";
         $res = M()->query($sql);
         if($res === true){
             echo "create table x_msg_wx ok!".'<br>';
@@ -129,13 +129,53 @@ CREATE TABLE `x_msg_znx`  (
   `czip` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '操作IP',
   `sj` datetime NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC";
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '消息-站内信' ROW_FORMAT = DYNAMIC";
         $res = M()->query($sql);
         if($res === true){
             echo "create table x_msg_znx ok!".'<br>';
         }
         else{
             echo "create table x_msg_znx fail!".'<br>';
+        }
+    }
+
+    /**
+     * 创建消息-异步发送消息队列表
+     *
+     * @author wumengmeng <wu_mengmeng@foxmail.com>
+     */
+    private function create_x_msg_queue(){
+        //如果已有表，先删除，再重新创建
+
+        //1.删除表
+        $sql = "DROP TABLE IF EXISTS `x_msg_queue`";
+        $res = M()->query($sql);
+        if($res === true){
+            echo "drop table x_msg_queue ok!".'<br>';
+        }
+        else{
+            echo "drop table x_msg_queue fail!".'<br>';
+        }
+
+        //2.重建表
+        $sql = "
+CREATE TABLE `x_msg_queue`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `ywlx` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '业务类型 配置中tpl下自定义',
+  `fs` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '发送方式',
+  `uid` int(11) NOT NULL DEFAULT 0 COMMENT 'uid',
+  `data` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '传入数据',
+  `ip` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '内容',
+  `sj` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+  `zt` int(11) NOT NULL DEFAULT 1 COMMENT '状态 1=待处理 2=处理中 3=处理完成',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '消息-异步发送消息队列表' ROW_FORMAT = DYNAMIC";
+        $res = M()->query($sql);
+        if($res === true){
+            echo "create table x_msg_queue ok!".'<br>';
+        }
+        else{
+            echo "create table x_msg_queue fail!".'<br>';
         }
     }
 
@@ -148,6 +188,7 @@ CREATE TABLE `x_msg_znx`  (
         $this->create_x_msg_sms();
         $this->create_x_msg_wx();
         $this->create_x_msg_znx();
+        $this->create_x_msg_queue();
     }
 
 
